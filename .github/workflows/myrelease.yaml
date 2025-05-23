@@ -34,15 +34,19 @@ jobs:
           zip -r dist.zip dist/*  # 打包 dist 目录
           echo "RELEASE_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
       
-      # 动态生成 Tag（若无 Tag）
+      # 动态生成 Tag（关键修复点）
       - name: Generate Tag
-        id: tag
+        id: generate-tag
         run: |
-          if [ -z "${{ github.ref_type }}" ] || [ "${{ github.ref_type }}" != "tag" ]; then
+          if [ "${{ github.ref_type }}" != "tag" ]; then
             echo "生成动态 Tag..."
             COMMIT_SHA_SHORT=$(git rev-parse --short HEAD)
             DATE=$(date +%Y%m%d)
-            echo "tag_name=auto-$DATE-$COMMIT_SHA_SHORT" >> $GITHUB_OUTPUT
+            TAG_NAME="auto-$DATE-$COMMIT_SHA_SHORT"
+            echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+            # 自动创建并推送 Tag
+            git tag $TAG_NAME
+            git push origin $TAG_NAME
           else
             echo "使用已有 Tag: ${{ github.ref_name }}"
             echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT

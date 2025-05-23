@@ -21,7 +21,7 @@ const VITE_REMOTE_DEV = process.env.VITE_REMOTE_DEV === 'true'
 const DISABLE_TEMPLATES_PROXY = process.env.DISABLE_TEMPLATES_PROXY === 'true'
 
 const DEV_SERVER_COMFYUI_URL =
-  process.env.DEV_SERVER_COMFYUI_URL || 'http://127.0.0.1:8188'
+  process.env.DEV_SERVER_COMFYUI_URL || 'http://127.0.0.1:8000'
 
 export default defineConfig({
   base: '',

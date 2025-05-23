@@ -11,10 +11,14 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.set_version.outputs.version }}
+      timestamp: ${{ steps.set_timestamp.outputs.timestamp }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set timestamp
+        id: set_timestamp
+        run: echo "timestamp=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -59,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}  # 使用默认 Token 或替换为 MY_TOKEN
         with:
           files: dist.zip
-          tag_name: v${{ needs.build-and-release.outputs.version }}-$(date +%s)
+          tag_name: v1.19.9+${{ needs.build-and-release.outputs.timestamp }}
           target_commitish: ${{ github.sha }}  # 精确绑定到触发工作流的提交
           draft: false
           make_latest: ${{ github.ref_name == 'main' }}

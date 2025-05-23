@@ -6,7 +6,7 @@ on:
       - master
       - release-v1.19.9
     tags:
-      - '*'
+      - 'v*'
 
 jobs:
   build-and-release:
@@ -33,6 +33,20 @@ jobs:
         run: |
           zip -r dist.zip dist/*  # 打包 dist 目录
           echo "RELEASE_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      
+      # 动态生成 Tag（若无 Tag）
+      - name: Generate Tag
+        id: tag
+        run: |
+          if [ -z "${{ github.ref_type }}" ] || [ "${{ github.ref_type }}" != "tag" ]; then
+            echo "生成动态 Tag..."
+            COMMIT_SHA_SHORT=$(git rev-parse --short HEAD)
+            DATE=$(date +%Y%m%d)
+            echo "tag_name=auto-$DATE-$COMMIT_SHA_SHORT" >> $GITHUB_OUTPUT
+          else
+            echo "使用已有 Tag: ${{ github.ref_name }}"
+            echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
       # 步骤 5：创建 GitHub Release 并上传产物
       - name: Create Release

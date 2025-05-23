@@ -1,4 +1,3 @@
-
 name: Auto Build and Release
 on:
   push:
@@ -11,23 +10,27 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
     steps:
-      # 步骤 1：拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 步骤 2：设置构建环境（示例为 Node.js，其他语言需调整）
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
 
-      # 步骤 3：安装依赖并构建（根据项目调整命令）
       - name: Install dependencies and build
         run: |
           npm install
           npm run build
           npm run zipdist
+
+      - name: Set version output
+        id: set_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
@@ -42,21 +45,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Download dist artifact
         uses: actions/download-artifact@v4
         with:
           name: dist-files
+
       - name: Create release
-        id: create_release
         uses: softprops/action-gh-release@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}  # 使用默认 Token 或替换为 MY_TOKEN
         with:
-          files: |
-            dist.zip
-          tag_name: v${{ needs.build.outputs.version }}
-          target_commitish: ${{ github.event.pull_request.base.ref }}
-          make_latest: ${{ github.event.pull_request.base.ref == 'main' }}
-          draft: ${{ github.event.pull_request.base.ref != 'main' }}
+          files: dist.zip
+          tag_name: v${{ needs.build-and-release.outputs.version }}
+          target_commitish: ${{ github.ref_name }}
+          draft: ${{ github.ref_name != 'main' }}
+          make_latest: ${{ github.ref_name == 'main' }}
           prerelease: false
           generate_release_notes: true

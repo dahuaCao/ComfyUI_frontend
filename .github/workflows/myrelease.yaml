@@ -63,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}  # 使用默认 Token 或替换为 MY_TOKEN
         with:
           files: dist.zip
-          tag_name: v1.19.9+${{ needs.build-and-release.outputs.timestamp }}
+          tag_name: my_v${{ needs.build-and-release.outputs.version }}
           target_commitish: ${{ github.sha }}  # 精确绑定到触发工作流的提交
           draft: false
           make_latest: ${{ github.ref_name == 'main' }}
